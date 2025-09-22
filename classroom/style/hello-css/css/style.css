@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* classes */
+.font-bold {
+  font-weight: bold;
+}
+
+.color-green {
+  color: green;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
+h1 {
+  color: red;
+  text-align: center;
+}
+
+div p, h1 {
+  color: blue;
+}
+
+#first-paragraph {
+  font-size: 20px;
+  color: brown;
+}
