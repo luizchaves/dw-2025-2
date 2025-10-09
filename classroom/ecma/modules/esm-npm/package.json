@@ -1,0 +1,9 @@
+{
+  "name": "esm-npm",
+  "version": "1.0.0",
+  "description": "Exemplo de módulo ES com npm",
+  "type": "module",
+  "dependencies": {
+    "mathjs": "^14.8.2"
+  }
+}
