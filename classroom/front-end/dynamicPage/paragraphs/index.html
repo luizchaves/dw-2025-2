@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello Dynamic Pages</title>
+</head>
+<body>
+  <h1>Hello Dynamic Pages</h1>
+  <div id="paragraphs"></div>
+  <script>
+    const paragraphs = [
+      'Events are actions or occurrences that happen in the system you are programming, which the system tells you about so your code can respond to them.',
+      'In JavaScript, events are used to signal that something has happened, such as a user clicking a button, a page loading, or a form being submitted.',
+      'You can listen for these events and execute specific code when they occur using event listeners.',
+      'Dynamic pages can change their content without requiring a full page reload, providing a smoother user experience.',
+      'This is often achieved using JavaScript to manipulate the Document Object Model (DOM)',
+    ];
+
+    const paragraphsDiv = document.getElementById('paragraphs');
+
+    const [firstParagraph, secondParagraph, thirdParagraph] = paragraphs;
+
+    // Method 1: Using innerHTML
+    paragraphsDiv.innerHTML = `<p>${firstParagraph}</p>`;
+
+    // Method 2: Using insertAdjacentHTML
+    paragraphsDiv.insertAdjacentHTML('beforeend', `<p>${secondParagraph}</p>`);
+
+    // Method 3: Using createElement and appendChild
+    const p = document.createElement('p');
+    p.textContent = thirdParagraph; // <p>Third paragraph</p>
+    paragraphsDiv.appendChild(p);
+
+    // Method 4: Using a loop to add remaining paragraphs
+    const remainingParagraphs = paragraphs.slice(3);
+    remainingParagraphs.forEach(p => {
+      paragraphsDiv.insertAdjacentHTML('beforeend', `<p>${p}</p>`);
+    });
+  </script>
+</body>
+</html>

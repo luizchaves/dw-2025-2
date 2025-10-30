@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <ul id="itemList"></ul>
+  <script>
+    function generateList(qtd) {
+      let items = '';
+
+      for (let i = 1; i <= qtd; i++) {
+        items += `<li>Item ${i}</li>`;
+      }
+
+      return items;
+    }
+    const qtd = prompt('Digite a quantidade de itens:');
+
+    let items = generateList(qtd);
+
+    const ul = document.querySelector('#itemList');
+
+    ul.innerHTML = items;
+  </script>
+</body>
+</html>
