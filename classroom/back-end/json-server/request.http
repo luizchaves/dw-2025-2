@@ -1,0 +1,26 @@
+### List hosts
+GET http://localhost:3000/hosts
+
+### List a host
+GET http://localhost:3000/hosts/1
+
+### Create a new host
+POST http://localhost:3000/hosts
+Content-Type: application/json
+
+{
+  "name": "Cloudflare DNS",
+  "address": "1.1.1.1"
+}
+
+### Update a host
+PUT http://localhost:3000/hosts/5a71
+Content-Type: application/json
+
+{
+  "name": "Cloudflare DNS",
+  "address": "1.1.1.1"
+}
+
+### Delete a host
+DELETE http://localhost:3000/hosts/4bf8
