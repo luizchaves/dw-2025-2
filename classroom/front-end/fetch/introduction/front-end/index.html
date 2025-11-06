@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intro Fetch</title>
+</head>
+<body>
+  <script type="module">
+    import { createHost, readHosts, updateHost } from './js/service/api.js';
+
+    // Read hosts
+    const hosts = await readHosts();
+    console.log(hosts);
+
+    // Create a host
+    const createdHost = await createHost({
+      name: 'Example Host',
+      address: '192.168.0.1'
+    });
+    console.log(createdHost);
+
+    // Update a host
+    const updatedHost = await updateHost(createdHost.id, {
+      name: 'Updated Host',
+      address: '192.168.0.2'
+    });
+    console.log(updatedHost);
+
+    // Delete a host
+    const isDeleted = await deleteHost(updatedHost.id);
+    console.log('Deleted:', isDeleted);
+  </script>
+</body>
+</html>

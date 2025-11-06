@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciador de Hosts</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-hdd-network"></i> Gerenciador de Hosts
+    </h1>
+
+    <!-- Formulário de Cadastro/Edição -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-plus-circle"></i> <span id="formTitle">Adicionar Host</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <form id="hostForm">
+          <input type="hidden" id="hostId">
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <label for="hostName" class="form-label">Nome do Host</label>
+              <input type="text" class="form-control" id="hostName" placeholder="Ex: Google DNS" required>
+            </div>
+            <div class="col-md-5 mb-3">
+              <label for="hostAddress" class="form-label">Endereço</label>
+              <input type="text" class="form-control" id="hostAddress" placeholder="Ex: 8.8.8.8" required>
+            </div>
+            <div class="col-md-2 mb-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                <i class="bi bi-check-circle"></i> Salvar
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="cancelBtn" style="display: none;">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de Hosts -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-list-ul"></i> Lista de Hosts
+        </h5>
+        <span class="badge bg-primary" id="hostCount">0 hosts</span>
+      </div>
+      <div class="card-body">
+        <div id="hostList" class="table-responsive">
+          <!-- A tabela será gerada dinamicamente -->
+        </div>
+        <div id="emptyMessage" class="text-center text-muted py-4">
+          <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+          <p class="mt-2">Nenhum host cadastrado. Adicione o primeiro host acima!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-exclamation-triangle text-warning"></i> Confirmar Exclusão
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja excluir o host <strong id="deleteHostName"></strong>?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+            <i class="bi bi-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="./js/services/storage.js"></script>
+  <script type="module">
+    import Storage from './js/services/storage.js';
+    // Array de hosts (armazenamento em memória)
+    let hosts = await Storage.read('hosts');
+    let editingId;
+
+    // Elementos do DOM
+    const hostForm = document.getElementById('hostForm');
+    const hostIdInput = document.getElementById('hostId');
+    const hostNameInput = document.getElementById('hostName');
+    const hostAddressInput = document.getElementById('hostAddress');
+    const hostListDiv = document.getElementById('hostList');
+    const emptyMessageDiv = document.getElementById('emptyMessage');
+    const hostCountBadge = document.getElementById('hostCount');
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteHostNameSpan = document.getElementById('deleteHostName');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    window.showDeleteModal = showDeleteModal;
+    window.editHost = editHost;
+
+    // Renderizar lista de hosts
+    function renderHosts() {
+      if (hosts.length === 0) {
+        hostListDiv.style.display = 'none';
+        emptyMessageDiv.style.display = 'block';
+        hostCountBadge.textContent = '0 hosts';
+        return;
+      }
+
+      hostListDiv.style.display = 'block';
+      emptyMessageDiv.style.display = 'none';
+      hostCountBadge.textContent = `${hosts.length} host${hosts.length !== 1 ? 's' : ''}`;
+
+      const table = `
+        <table class="table table-hover table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th style="width: 10%;">#</th>
+              <th style="width: 40%;">Nome</th>
+              <th style="width: 30%;">Endereço</th>
+              <th style="width: 20%;" class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${hosts.map(host => `
+              <tr>
+                <td>${host.id}</td>
+                <td><i class="bi bi-hdd-network text-primary"></i> ${host.name}</td>
+                <td><code>${host.address}</code></td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-warning" onclick="editHost('${host.id}')" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="showDeleteModal('${host.id}')" title="Excluir">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      hostListDiv.innerHTML = table;
+    }
+
+    // Adicionar ou atualizar host
+    async function saveHost(event) {
+      event.preventDefault();
+
+      const name = hostNameInput.value.trim();
+      const address = hostAddressInput.value.trim();
+
+      if (!name || !address) {
+        alert('Por favor, preencha todos os campos!');
+        return;
+      }
+
+      const host = { name, address };
+
+      if (editingId !== null) {
+        // Atualizar host existente
+        const index = hosts.findIndex(h => h.id === editingId);
+        if (index !== -1) {
+          // back-end
+          await Storage.update('hosts', editingId, host);
+          // front-end
+          hosts[index] = { id: editingId, ...host };
+          showToast('Host atualizado com sucesso!', 'success');
+        }
+        editingId = null;
+      } else {
+        // Adicionar novo host
+        // back-end
+        const createdHost = await Storage.create('hosts', host);
+        // front-end
+        hosts.push(createdHost);
+        showToast('Host adicionado com sucesso!', 'success');
+      }
+
+      resetForm();
+      renderHosts();
+    }
+
+    // Editar host
+    function editHost(id) {
+      const host = hosts.find(h => h.id === id);
+      if (!host) return;
+
+      editingId = id;
+      hostNameInput.value = host.name;
+      hostAddressInput.value = host.address;
+      formTitle.innerHTML = '<i class="bi bi-pencil"></i> Editar Host';
+      submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Atualizar';
+      cancelBtn.style.display = 'inline-block';
+
+      // Scroll para o formulário
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Mostrar modal de confirmação de exclusão
+    function showDeleteModal(id) {
+      const host = hosts.find(h => h.id === id);
+      if (!host) return;
+
+      deleteHostNameSpan.textContent = host.name;
+      confirmDeleteBtn.onclick = () => deleteHost(id);
+      deleteModal.show();
+    }
+
+    // Excluir host
+    function deleteHost(id) {
+      // back-end
+      Storage.remove('hosts', id);
+      // front-end
+      hosts = hosts.filter(h => h.id !== id);
+      deleteModal.hide();
+      showToast('Host excluído com sucesso!', 'danger');
+      renderHosts();
+    }
+
+    // Resetar formulário
+    function resetForm() {
+      hostForm.reset();
+      editingId = null;
+      formTitle.innerHTML = '<i class="bi bi-plus-circle"></i> Adicionar Host';
+      submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Salvar';
+      cancelBtn.style.display = 'none';
+    }
+
+    // Mostrar toast de notificação
+    function showToast(message, type = 'success') {
+      const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+
+      const toast = document.createElement('div');
+      toast.className = `alert alert-${type} alert-dismissible fade show`;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+
+      toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Criar container para toasts
+    function createToastContainer() {
+      const container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.style.position = 'fixed';
+      container.style.top = '20px';
+      container.style.right = '20px';
+      container.style.zIndex = '9999';
+      container.style.minWidth = '300px';
+      document.body.appendChild(container);
+      return container;
+    }
+
+    // Event Listeners
+    hostForm.addEventListener('submit', saveHost);
+    cancelBtn.addEventListener('click', resetForm);
+
+    // Renderização inicial
+    renderHosts();
+  </script>
+</body>
+</html>
