@@ -1,20 +1,24 @@
+@server=http://localhost:3000
+@createdHostId={{createHost.response.body.id}}
+
 ### List hosts
-GET http://localhost:3000/hosts
+GET {{server}}/hosts
 
 ### List a host
-GET http://localhost:3000/hosts/1
+GET {{server}}/hosts/1
 
 ### Create a new host
-POST http://localhost:3000/hosts
+# @name createHost
+POST {{server}}/hosts
 Content-Type: application/json
 
 {
-  "name": "Cloudflare DNS",
+  "name": "DNS Server",
   "address": "1.1.1.1"
 }
 
 ### Update a host
-PUT http://localhost:3000/hosts/5a71
+PUT {{server}}/hosts/{{createdHostId}}
 Content-Type: application/json
 
 {
@@ -23,4 +27,4 @@ Content-Type: application/json
 }
 
 ### Delete a host
-DELETE http://localhost:3000/hosts/4bf8
+DELETE {{server}}/hosts/{{createdHostId}}
