@@ -18,58 +18,58 @@
   ],
   "pings": [
     {
-      "id": 1,
+      "id": "1",
       "createdAt": "2024-01-01T00:00:00Z",
-      "hostId": 1
+      "hostId": "1"
     },
     {
-      "id": 2,
+      "id": "2",
       "createdAt": "2024-01-01T00:00:00Z",
-      "hostId": 2
+      "hostId": "2"
     }
   ],
   "icmps": [
     {
-      "id": 1,
+      "id": "1",
       "seq": 1,
       "ttl": 54,
       "time": 90,
-      "pingId": 1
+      "pingId": "1"
     },
     {
-      "id": 2,
+      "id": "2",
       "seq": 2,
       "ttl": 54,
       "time": 95,
-      "pingId": 1
+      "pingId": "1"
     },
     {
-      "id": 3,
+      "id": "3",
       "seq": 3,
       "ttl": 54,
       "time": 85,
-      "pingId": 1
+      "pingId": "1"
     },
     {
-      "id": 4,
+      "id": "4",
       "seq": 1,
       "ttl": 54,
       "time": 95,
-      "pingId": 2
+      "pingId": "2"
     },
     {
-      "id": 5,
+      "id": "5",
       "seq": 2,
       "ttl": 54,
       "time": 80,
-      "pingId": 2
+      "pingId": "2"
     },
     {
-      "id": 6,
+      "id": "6",
       "seq": 3,
       "ttl": 54,
       "time": 99,
-      "pingId": 2
+      "pingId": "2"
     }
   ]
 }
