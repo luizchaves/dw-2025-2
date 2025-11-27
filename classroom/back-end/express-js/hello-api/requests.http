@@ -1,0 +1,51 @@
+@api=http://localhost:3000/api
+
+### GET /api with plain text response
+
+GET {{api}}/
+
+### GET /api/pt with JSON response
+
+GET {{api}}/pt
+
+### GET /api/hello/pt with query parameter
+
+GET {{api}}/hello/pt?name=Luiz
+
+### GET /api/hello/pt with query parameter missing (to test error handling)
+
+GET {{api}}/hello/pt
+
+### GET /api/hello/en with route parameter
+
+GET {{api}}/hello/en/Luiz
+
+### GET /api/hello/en with route parameter missing (to test error handling)
+
+GET {{api}}/hello/en/
+
+### POST /api/hello/es with body parameter (JSON)
+
+POST {{api}}/hello/es
+Content-Type: application/json
+
+{
+  "name": "Luiz"
+}
+
+### POST /api/hello/es with body missing (to test error handling)
+
+POST {{api}}/hello/es
+
+### POST /api/hello/es with body parameter missing (to test error handling)
+
+POST {{api}}/hello/es
+Content-Type: application/json
+
+{
+  "campus": "IFPB"
+}
+
+### GET /pages/not-found to test 404 error handling
+
+GET {{api}}/pages/not-found
