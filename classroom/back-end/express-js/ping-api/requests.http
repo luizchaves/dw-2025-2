@@ -1,0 +1,14 @@
+@server=http://127.0.0.1:3000/api
+
+### Create Ping Request with Host Parameter (Default Count: 3)
+
+POST {{server}}/ping/8.8.8.8
+
+### Create Ping Request with error
+
+POST {{server}}/ping/300.8.8.8
+
+### Create Ping Request with Host and Count Parameter
+
+POST {{server}}/ping/8.8.8.8/count/1
+
