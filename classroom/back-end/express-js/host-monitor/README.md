@@ -37,7 +37,150 @@ O servidor será iniciado em `http://localhost:3000` por padrão.
 
 ## 📍 Rotas Disponíveis
 
-### 1. POST `/api/ping/:host`
+### Host Management
+
+#### 1. POST `/hosts`
+Cria um novo host para monitoramento.
+
+**Body (JSON):**
+```json
+{
+  "name": "Google",
+  "address": "google.com"
+}
+```
+
+**Resposta de Sucesso (201):**
+```json
+{
+  "id": "clh7w1wf80000qz8d5z7z8z8z",
+  "name": "Google",
+  "address": "google.com"
+}
+```
+
+**Resposta de Erro - Campo obrigatório faltando (400):**
+```json
+{
+  "error": "Name and address are required"
+}
+```
+
+---
+
+#### 2. GET `/hosts`
+Retorna a lista de todos os hosts cadastrados.
+
+**Exemplo de Requisição:**
+```bash
+curl http://localhost:3000/hosts
+```
+
+**Resposta (200):**
+```json
+[
+  {
+    "id": "clh7w1wf80000qz8d5z7z8z8z",
+    "name": "Google",
+    "address": "google.com"
+  },
+  {
+    "id": "clh7w1wf80001qz8d5z7z8z8z",
+    "name": "Cloudflare DNS",
+    "address": "1.1.1.1"
+  }
+]
+```
+
+---
+
+#### 3. GET `/hosts/:hostId`
+Retorna um host específico pelo ID.
+
+**Parâmetros:**
+- `hostId` (obrigatório) - ID do host
+
+**Exemplo de Requisição:**
+```bash
+curl http://localhost:3000/hosts/clh7w1wf80000qz8d5z7z8z8z
+```
+
+**Resposta de Sucesso (200):**
+```json
+{
+  "id": "clh7w1wf80000qz8d5z7z8z8z",
+  "name": "Google",
+  "address": "google.com"
+}
+```
+
+**Resposta de Erro - Host não encontrado (404):**
+```json
+{
+  "error": "Host not found"
+}
+```
+
+---
+
+#### 4. PUT `/hosts/:hostId`
+Atualiza um host existente.
+
+**Parâmetros:**
+- `hostId` (obrigatório) - ID do host
+
+**Body (JSON):**
+```json
+{
+  "name": "Google Updated",
+  "address": "8.8.8.8"
+}
+```
+
+**Resposta de Sucesso (200):**
+```json
+{
+  "id": "clh7w1wf80000qz8d5z7z8z8z",
+  "name": "Google Updated",
+  "address": "8.8.8.8"
+}
+```
+
+**Resposta de Erro - Host não encontrado (404):**
+```json
+{
+  "error": "Host not found"
+}
+```
+
+---
+
+#### 5. DELETE `/hosts/:hostId`
+Remove um host do monitoramento.
+
+**Parâmetros:**
+- `hostId` (obrigatório) - ID do host
+
+**Exemplo de Requisição:**
+```bash
+curl -X DELETE http://localhost:3000/hosts/clh7w1wf80000qz8d5z7z8z8z
+```
+
+**Resposta de Sucesso (204):**
+Sem conteúdo
+
+**Resposta de Erro - Host não encontrado (404):**
+```json
+{
+  "error": "Host not found"
+}
+```
+
+---
+
+### Ping Operations
+
+#### 6. POST `/ping/:host`
 Executa um ping para um host específico com 3 tentativas padrão.
 
 **Parâmetros:**
@@ -45,7 +188,7 @@ Executa um ping para um host específico com 3 tentativas padrão.
 
 **Exemplo de Requisição:**
 ```bash
-curl -X POST http://localhost:3000/api/ping/google.com
+curl -X POST http://localhost:3000/ping/google.com
 ```
 
 **Resposta de Sucesso (200):**
@@ -65,7 +208,9 @@ curl -X POST http://localhost:3000/api/ping/google.com
 }
 ```
 
-### 2. POST `/api/ping/:host/count/:count`
+---
+
+#### 7. POST `/ping/:host/count/:count`
 Executa um ping para um host específico com uma quantidade de tentativas customizável.
 
 **Parâmetros:**
@@ -74,7 +219,7 @@ Executa um ping para um host específico com uma quantidade de tentativas custom
 
 **Exemplo de Requisição:**
 ```bash
-curl -X POST http://localhost:3000/api/ping/google.com/count/5
+curl -X POST http://localhost:3000/ping/google.com/count/5
 ```
 
 **Resposta de Sucesso (200):**
@@ -112,15 +257,44 @@ curl -X POST http://localhost:3000/api/ping/google.com/count/5
 
 ### Usando curl
 
+**Criar um novo host:**
 ```bash
-# POST /api/ping/:host (com 3 tentativas padrão)
-curl -X POST http://localhost:3000/api/ping/google.com
+curl -X POST http://localhost:3000/hosts \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Google", "address": "google.com"}'
+```
 
-# POST /api/ping/:host/count/:count (com quantidade customizável)
-curl -X POST http://localhost:3000/api/ping/google.com/count/5
+**Listar todos os hosts:**
+```bash
+curl http://localhost:3000/hosts
+```
 
-# Ping para outros hosts
-curl -X POST http://localhost:3000/api/ping/8.8.8.8/count/3
+**Obter um host específico:**
+```bash
+curl http://localhost:3000/hosts/clh7w1wf80000qz8d5z7z8z8z
+```
+
+**Atualizar um host:**
+```bash
+curl -X PUT http://localhost:3000/hosts/clh7w1wf80000qz8d5z7z8z8z \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Google DNS", "address": "8.8.8.8"}'
+```
+
+**Deletar um host:**
+```bash
+curl -X DELETE http://localhost:3000/hosts/clh7w1wf80000qz8d5z7z8z8z
+```
+
+**Fazer ping (3 tentativas padrão):**
+```bash
+curl -X POST http://localhost:3000/ping/google.com
+```
+
+**Fazer ping com quantidade customizada:**
+```bash
+curl -X POST http://localhost:3000/ping/google.com/count/5
+curl -X POST http://localhost:3000/ping/8.8.8.8/count/3
 ```
 
 ### Usando o arquivo requests.http
