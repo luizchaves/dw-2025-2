@@ -35,6 +35,16 @@ npm start
 
 O servidor será iniciado em `http://localhost:3000` por padrão.
 
+### 📚 Documentação com Swagger
+
+A documentação interativa da API está disponível em:
+
+```
+http://localhost:3000/api-docs
+```
+
+Acesse este endereço em seu navegador para explorar e testar todas as rotas de forma interativa!
+
 ## 📍 Rotas Disponíveis
 
 ### Host Management
@@ -316,6 +326,9 @@ ping-api/
 
 - **Express.js** - Framework web minimalista para Node.js
 - **Node.js** - Runtime JavaScript
+- **Swagger/OpenAPI** - Documentação interativa das APIs
+- **Morgan** - HTTP request logger middleware
+- **Ping** - Módulo para executar comandos ping
 
 ## 📝 Exemplo de Uso
 
