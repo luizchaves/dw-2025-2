@@ -3,13 +3,17 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "db:reload": "npm run db:drop && npm run db:load",
+    "db:load": "node src/database/load.js",
+    "db:drop": "[ -e src/database/db.sqlite ] && rm src/database/db.sqlite"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.0.4",
     "express": "^5.2.1",
     "morgan": "^1.10.1",
     "ping": "^1.0.0",
+    "sqlite-async": "^1.2.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

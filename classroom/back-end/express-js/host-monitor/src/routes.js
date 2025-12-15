@@ -40,14 +40,14 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/hosts', (req, res) => {
+router.post('/hosts', async (req, res) => {
   const { name, address } = req.body;
 
   if (!name || !address) {
     return res.status(400).json({ error: 'Name and address are required' });
   }
 
-  const newHost = Host.create({ name, address });
+  const newHost = await Host.create({ name, address });
 
   return res.status(201).json(newHost);
 });
@@ -68,8 +68,8 @@ router.post('/hosts', (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Host'
  */
-router.get('/hosts', (req, res) => {
-  const hosts = Host.readAll();
+router.get('/hosts', async (req, res) => {
+  const hosts = await Host.read();
 
   return res.json(hosts);
 });
@@ -101,10 +101,10 @@ router.get('/hosts', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/hosts/:hostId', (req, res) => {
+router.get('/hosts/:hostId', async (req, res) => {
   const { hostId } = req.params;
 
-  const host = Host.readById(hostId);
+  const host = await Host.readById(hostId);
 
   if (!host) {
     return res.status(404).json({ error: 'Host not found' });
@@ -160,7 +160,7 @@ router.get('/hosts/:hostId', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/hosts/:hostId', (req, res) => {
+router.put('/hosts/:hostId', async (req, res) => {
   const { name, address } = req.body;
 
   const { hostId } = req.params;
@@ -169,7 +169,7 @@ router.put('/hosts/:hostId', (req, res) => {
     return res.status(400).json({ error: 'Name and address are required' });
   }
 
-  const updatedHost = Host.update({ hostId, name, address });
+  const updatedHost = await Host.update({ hostId, name, address });
 
   if (!updatedHost) {
     return res.status(404).json({ error: 'Host not found' });
@@ -200,10 +200,10 @@ router.put('/hosts/:hostId', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/hosts/:hostId', (req, res) => {
+router.delete('/hosts/:hostId', async (req, res) => {
   const { hostId } = req.params;
 
-  const removed = Host.remove(hostId);
+  const removed = await Host.remove(hostId);
 
   if (!removed) {
     return res.status(404).json({ error: 'Host not found' });
@@ -311,7 +311,7 @@ router.use((req, res, next) => {
 
 // Handling 500
 router.use((err, req, res, next) => {
-  // console.error(err.stack);
+  console.error(err.stack);
   if (err.message === 'Unknown host') {
     return res.status(400).json({ error: 'Unknown host' });
   }

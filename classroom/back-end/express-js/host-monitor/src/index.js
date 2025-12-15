@@ -3,11 +3,8 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from './swagger.js';
 import router from './routes.js';
-import Seed from './database/seeders.js';
 
 const app = express();
-
-Seed.up();
 
 app.use(morgan('dev'));
 

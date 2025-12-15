@@ -1,12 +1,12 @@
 {
   "hosts": [
     {
-      "id": "z0973lixq4rg5mw9s6bskaod",
+      "id": 1,
       "name": "Google DNS",
       "address": "8.8.8.8"
     },
     {
-      "id": "n3n7femly9ug9tqpfpz8pf3p",
+      "id": 2,
       "name": "Google Search",
       "address": "www.google.com"
     }
