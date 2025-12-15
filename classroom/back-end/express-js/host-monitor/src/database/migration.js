@@ -1,7 +1,7 @@
 import Database from './database.js';
 
-async function up() {
-  const db = await Database.connect();
+function up() {
+  const db = Database.connect();
 
   const hostsSql = `
     CREATE TABLE hosts (
@@ -11,19 +11,19 @@ async function up() {
     )
   `;
 
-  await db.run(hostsSql);
+  db.exec(hostsSql);
 
   db.close();
 }
 
-async function down() {
-  const db = await Database.connect();
+function down() {
+  const db = Database.connect();
 
   const hostsSql = `
     DROP TABLE hosts
   `;
 
-  await db.run(hostsSql);
+  db.exec(hostsSql);
 
   db.close();
 }

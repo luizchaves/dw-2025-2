@@ -13,7 +13,6 @@
     "express": "^5.2.1",
     "morgan": "^1.10.1",
     "ping": "^1.0.0",
-    "sqlite-async": "^1.2.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

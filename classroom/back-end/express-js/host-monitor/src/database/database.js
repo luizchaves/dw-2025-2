@@ -1,10 +1,10 @@
 import { resolve } from 'node:path';
-import { Database } from 'sqlite-async';
+import { DatabaseSync } from 'node:sqlite';
 
 const dbFile = resolve('src', 'database', 'db.sqlite');
 
-async function connect() {
-  return await Database.open(dbFile);
+function connect() {
+  return new DatabaseSync(dbFile);
 }
 
 export default { connect };
