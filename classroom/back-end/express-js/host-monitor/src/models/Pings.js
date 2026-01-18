@@ -23,6 +23,13 @@ async function create({ icmps, stats, host }) {
       icmps: true,
       stats: true,
       host: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
   });
 
@@ -36,6 +43,13 @@ async function read(where = {}) {
       icmps: true,
       stats: true,
       host: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
   });
 

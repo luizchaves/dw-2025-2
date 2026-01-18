@@ -45,3 +45,33 @@ GET {{server}}/tags
 
 ### Read hosts by tag
 GET {{server}}/tags/dns/hosts
+
+### Create User
+# @name createdUser
+POST {{server}}/users
+Content-Type: application/json
+
+{
+  "name": "Luiz",
+  "email": "luiz@email.com",
+  "password": "123"
+}
+
+### Create a user with same email
+POST {{server}}/users
+Content-Type: application/json
+
+{
+  "name": "Luiz",
+  "email": "luiz@email.com",
+  "password": "123"
+}
+
+### Create a user without email
+POST {{server}}/users
+Content-Type: application/json
+
+{
+  "name": "Luiz",
+  "password": "123"
+}

@@ -2,9 +2,17 @@ import express from 'express';
 import Host from './models/Hosts.js';
 import Ping from './models/Pings.js';
 import Tag from './models/Tags.js';
+import User from './models/Users.js';
 import { ping } from './lib/ping.js';
 
 const router = express.Router();
+
+class HttpError extends Error {
+  constructor(message, code = 400) {
+    super(message);
+    this.code = code;
+  }
+}
 
 // Host routes
 
@@ -412,6 +420,71 @@ router.get('/tags/:tag/hosts', async (req, res) => {
   }
 });
 
+// User routes
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Criar um novo usuário
+ *     tags: [User Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: John Doe
+ *               email:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *               password:
+ *                 type: string
+ *                 example: strongpassword123
+ *     responses:
+ *      201:
+ *        description: Usuário criado com sucesso
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/User'
+ *      400:
+ *        description: Erro ao criar usuário
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ */
+router.post('/users', async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    throw new HttpError('Error when passing parameters');
+  }
+
+  try {
+    const createdUser = await User.create({ name, email, password });
+
+    delete createdUser.password;
+
+    res.status(201).json(createdUser);
+  } catch (error) {
+    console.error('User create error:', error);
+    if (
+      error.message.toLowerCase().includes('unique') &&
+      error.message.toLowerCase().includes('email')
+    ) {
+      throw new HttpError('Email already in use');
+    }
+
+    throw new HttpError('Unable to create a user');
+  }
+});
+
 // Handling 404
 router.use((req, res, next) => {
   res.status(404).json({ error: 'Not Found' });
@@ -420,6 +493,10 @@ router.use((req, res, next) => {
 // Handling 500
 router.use((err, req, res, next) => {
   console.error(err.stack);
+  if (err instanceof HttpError) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+
   if (err.message === 'Unknown host') {
     return res.status(400).json({ error: 'Unknown host' });
   }
