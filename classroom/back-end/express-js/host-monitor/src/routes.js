@@ -169,7 +169,7 @@ router.put('/hosts/:hostId', async (req, res) => {
     return res.status(400).json({ error: 'Name and address are required' });
   }
 
-  const updatedHost = await Host.update({ id: parseInt(hostId), name, address });
+  const updatedHost = await Host.update({ id: hostId, name, address });
 
   if (!updatedHost) {
     return res.status(404).json({ error: 'Host not found' });
@@ -203,7 +203,7 @@ router.put('/hosts/:hostId', async (req, res) => {
 router.delete('/hosts/:hostId', async (req, res) => {
   const { hostId } = req.params;
 
-  const removed = await Host.remove(parseInt(hostId));
+  const removed = await Host.remove(hostId);
 
   if (!removed) {
     return res.status(404).json({ error: 'Host not found' });

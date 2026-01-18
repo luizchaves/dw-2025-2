@@ -1,10 +1,11 @@
-import { resolve } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import 'dotenv/config';
+import { PrismaClient } from '../generated/prisma/index.js';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
-const dbFile = resolve('src', 'database', 'db.sqlite');
+const dbUrl = process.env['DATABASE_URL'] ?? 'file:./dev.db';
+const prisma = new PrismaClient({
+  adapter: new PrismaBetterSqlite3({ url: dbUrl }),
+  log: ['query', 'info', 'warn', 'error'],
+});
 
-function connect() {
-  return new DatabaseSync(dbFile);
-}
-
-export default { connect };
+export default prisma;
