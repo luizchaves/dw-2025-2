@@ -1,6 +1,8 @@
 import express from 'express';
-import ping from 'ping';
-import Host from './models/Host.js';
+import Host from './models/Hosts.js';
+import Ping from './models/Pings.js';
+import Tag from './models/Tags.js';
+import { ping } from './lib/ping.js';
 
 const router = express.Router();
 
@@ -41,13 +43,13 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/hosts', async (req, res) => {
-  const { name, address } = req.body;
+  const { name, address, tags } = req.body;
 
   if (!name || !address) {
     return res.status(400).json({ error: 'Name and address are required' });
   }
 
-  const newHost = await Host.create({ name, address });
+  const newHost = await Host.create({ name, address, tags });
 
   return res.status(201).json(newHost);
 });
@@ -161,7 +163,7 @@ router.get('/hosts/:hostId', async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 router.put('/hosts/:hostId', async (req, res) => {
-  const { name, address } = req.body;
+  const { name, address, tags } = req.body;
 
   const { hostId } = req.params;
 
@@ -169,7 +171,7 @@ router.put('/hosts/:hostId', async (req, res) => {
     return res.status(400).json({ error: 'Name and address are required' });
   }
 
-  const updatedHost = await Host.update({ id: hostId, name, address });
+  const updatedHost = await Host.update({ id: hostId, name, address, tags });
 
   if (!updatedHost) {
     return res.status(404).json({ error: 'Host not found' });
@@ -215,93 +217,199 @@ router.delete('/hosts/:hostId', async (req, res) => {
 
 /**
  * @swagger
- * /ping/{host}:
+ * /hosts/{hostId}/pings/{count}:
  *   post:
- *     summary: Executar ping com 3 tentativas padrão
- *     tags: [Ping Operations]
+ *     summary: Criar um ping para um host específico
+ *     tags: [Ping Management]
  *     parameters:
  *       - in: path
- *         name: host
+ *         name: hostId
  *         schema:
  *           type: string
  *         required: true
- *         description: Endereço ou IP do host a ser testado
- *         example: google.com
- *     responses:
- *       200:
- *         description: Resultado do ping
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PingResult'
- *       400:
- *         description: Host desconhecido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Erro interno do servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-router.post('/ping/:host', async (req, res) => {
-  const { host } = req.params;
-
-  const output = await ping.promise.probe(host, { min_reply: 3 });
-
-  return res.send(output);
-});
-
-/**
- * @swagger
- * /ping/{host}/count/{count}:
- *   post:
- *     summary: Executar ping com quantidade de tentativas customizável
- *     tags: [Ping Operations]
- *     parameters:
- *       - in: path
- *         name: host
- *         schema:
- *           type: string
- *         required: true
- *         description: Endereço ou IP do host a ser testado
- *         example: google.com
+ *         description: ID do host
  *       - in: path
  *         name: count
  *         schema:
  *           type: integer
  *         required: true
- *         description: Número de tentativas de ping
- *         example: 5
+ *         description: Número de pacotes ICMP a serem enviados
  *     responses:
  *       200:
- *         description: Resultado do ping
+ *         description: Ping criado com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PingResult'
+ *               $ref: '#/components/schemas/Ping'
  *       400:
- *         description: Host desconhecido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Erro interno do servidor
+ *         description: Erro ao criar ping para o host
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/ping/:host/count/:count', async (req, res) => {
-  const { host, count } = req.params;
+router.post('/hosts/:hostId/pings/:count', async (req, res) => {
+  const { hostId, count } = req.params;
 
-  const output = await ping.promise.probe(host, { min_reply: Number(count) });
+  try {
+    const host = await Host.readById(hostId);
 
-  return res.send(output);
+    const pingResult = await ping(host.address, count);
+
+    const createdPing = await Ping.create({ ...pingResult, host });
+
+    return res.json(createdPing);
+  } catch (error) {
+    throw new HttpError('Unable to create a ping for a host');
+  }
+});
+
+/**
+ * @swagger
+ * /hosts/{hostId}/pings:
+ *   get:
+ *     summary: Listar todos os pings de um host específico
+ *     tags: [Ping Management]
+ *     parameters:
+ *       - in: path
+ *         name: hostId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID do host
+ *     responses:
+ *       200:
+ *         description: Lista de pings do host
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Ping'
+ *       400:
+ *         description: Erro ao ler pings do host
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/hosts/:hostId/pings', async (req, res) => {
+  const { hostId: id } = req.params;
+
+  try {
+    const pings = await Ping.read({ host: { id } });
+
+    return res.json(pings);
+  } catch (error) {
+    throw new HttpError('Unable to read pings by host');
+  }
+});
+
+/**
+ * @swagger
+ * /pings:
+ *   get:
+ *     summary: Listar todos os pings
+ *     tags: [Ping Management]
+ *     responses:
+ *       200:
+ *         description: Lista de todos os pings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Ping'
+ *       400:
+ *         description: Erro ao ler pings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/pings', async (req, res) => {
+  try {
+    const pings = await Ping.read();
+
+    return res.json(pings);
+  } catch (error) {
+    throw new HttpError('Unable to read pings');
+  }
+});
+
+// Tags routes
+
+/**
+ * @swagger
+ * /tags:
+ *   get:
+ *     summary: Listar todas as tags
+ *     tags: [Tag Management]
+ *     responses:
+ *       200:
+ *         description: Lista de todas as tags
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Erro ao ler tags
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await Tag.read();
+
+    return res.json(tags);
+  } catch (error) {
+    throw new HttpError('Unable to read tags');
+  }
+});
+
+/**
+ * @swagger
+ * /tags/{tag}/hosts:
+ *   get:
+ *     summary: Listar todos os hosts associados a uma tag específica
+ *     tags: [Tag Management]
+ *     parameters:
+ *       - in: path
+ *         name: tag
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Nome da tag
+ *     responses:
+ *       200:
+ *         description: Lista de hosts associados à tag
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Host'
+ *       400:
+ *         description: Erro ao ler hosts por tag
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/tags/:tag/hosts', async (req, res) => {
+  const { tag } = req.params;
+
+  try {
+    const hosts = await Host.read({ tags: tag });
+
+    return res.json(hosts);
+  } catch (error) {
+    throw new HttpError('Unable to read hosts by tag');
+  }
 });
 
 // Handling 404

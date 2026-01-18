@@ -8,7 +8,8 @@ Content-Type: application/json
 
 {
   "name": "DNS Server",
-  "address": "1.1.1.1"
+  "address": "1.1.1.1",
+  "tags": ["DNS"]
 }
 
 ### Get All Hosts
@@ -23,21 +24,24 @@ Content-Type: application/json
 
 {
   "name": "Cloudflare DNS",
-  "address": "1.1.1.1"
+  "address": "1.1.1.1",
+  "tags": ["DNS", "Cloudflare"]
 }
 
 ### Delete a Host by ID
 DELETE {{server}}/hosts/{{createdHostId}}
 
-### Create Ping Request with Host Parameter (Default Count: 3)
+### Create a ping
+POST {{server}}/hosts/{{createdHostId}}/pings/3
 
-POST {{server}}/ping/1.1.1.1
+### Read pings
+GET {{server}}/hosts/{{createdHostId}}/pings
 
-### Create Ping Request with error
+### Read pings
+GET {{server}}/pings
 
-POST {{server}}/ping/300.8.8.8
+### Read tags
+GET {{server}}/tags
 
-### Create Ping Request with Host and Count Parameter
-
-POST {{server}}/ping/1.1.1.1/count/1
-
+### Read hosts by tag
+GET {{server}}/tags/dns/hosts
