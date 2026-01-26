@@ -13,7 +13,7 @@ form.onsubmit = async (event) => {
   const user = Object.fromEntries(new FormData(form));
 
   try {
-    const { auth, token } = await API.create('users/signin', user, false);
+    const { auth, token } = await API.create('signin', user, false);
 
     if (auth) {
       Auth.signin(token);

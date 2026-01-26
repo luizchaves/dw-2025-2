@@ -1,9 +1,12 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import Host from './models/Hosts.js';
 import Ping from './models/Pings.js';
 import Tag from './models/Tags.js';
 import User from './models/Users.js';
 import { ping } from './lib/ping.js';
+import { isAuthenticated } from './middleware/auth.js';
 
 const router = express.Router();
 
@@ -22,6 +25,8 @@ class HttpError extends Error {
  *   post:
  *     summary: Criar um novo host
  *     tags: [Host Management]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -50,7 +55,7 @@ class HttpError extends Error {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/hosts', async (req, res) => {
+router.post('/hosts', isAuthenticated, async (req, res) => {
   const { name, address, tags } = req.body;
 
   if (!name || !address) {
@@ -68,6 +73,8 @@ router.post('/hosts', async (req, res) => {
  *   get:
  *     summary: Listar todos os hosts
  *     tags: [Host Management]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todos os hosts
@@ -78,7 +85,7 @@ router.post('/hosts', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Host'
  */
-router.get('/hosts', async (req, res) => {
+router.get('/hosts', isAuthenticated, async (req, res) => {
   const hosts = await Host.read();
 
   return res.json(hosts);
@@ -90,6 +97,8 @@ router.get('/hosts', async (req, res) => {
  *   get:
  *     summary: Obter um host específico
  *     tags: [Host Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: hostId
@@ -111,7 +120,7 @@ router.get('/hosts', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/hosts/:hostId', async (req, res) => {
+router.get('/hosts/:hostId', isAuthenticated, async (req, res) => {
   const { hostId } = req.params;
 
   const host = await Host.readById(hostId);
@@ -129,6 +138,8 @@ router.get('/hosts/:hostId', async (req, res) => {
  *   put:
  *     summary: Atualizar um host
  *     tags: [Host Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: hostId
@@ -170,7 +181,7 @@ router.get('/hosts/:hostId', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/hosts/:hostId', async (req, res) => {
+router.put('/hosts/:hostId', isAuthenticated, async (req, res) => {
   const { name, address, tags } = req.body;
 
   const { hostId } = req.params;
@@ -193,6 +204,8 @@ router.put('/hosts/:hostId', async (req, res) => {
  *   delete:
  *     summary: Deletar um host
  *     tags: [Host Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: hostId
@@ -210,7 +223,7 @@ router.put('/hosts/:hostId', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/hosts/:hostId', async (req, res) => {
+router.delete('/hosts/:hostId', isAuthenticated, async (req, res) => {
   const { hostId } = req.params;
 
   const removed = await Host.remove(hostId);
@@ -229,6 +242,8 @@ router.delete('/hosts/:hostId', async (req, res) => {
  *   post:
  *     summary: Criar um ping para um host específico
  *     tags: [Ping Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: hostId
@@ -256,15 +271,17 @@ router.delete('/hosts/:hostId', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/hosts/:hostId/pings/:count', async (req, res) => {
+router.post('/hosts/:hostId/pings/:count', isAuthenticated, async (req, res) => {
   const { hostId, count } = req.params;
 
   try {
     const host = await Host.readById(hostId);
 
+    const userId = req.userId;
+
     const pingResult = await ping(host.address, count);
 
-    const createdPing = await Ping.create({ ...pingResult, host });
+    const createdPing = await Ping.create({ ...pingResult, host, userId });
 
     return res.json(createdPing);
   } catch (error) {
@@ -278,6 +295,8 @@ router.post('/hosts/:hostId/pings/:count', async (req, res) => {
  *   get:
  *     summary: Listar todos os pings de um host específico
  *     tags: [Ping Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: hostId
@@ -301,7 +320,7 @@ router.post('/hosts/:hostId/pings/:count', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/hosts/:hostId/pings', async (req, res) => {
+router.get('/hosts/:hostId/pings', isAuthenticated, async (req, res) => {
   const { hostId: id } = req.params;
 
   try {
@@ -319,6 +338,8 @@ router.get('/hosts/:hostId/pings', async (req, res) => {
  *   get:
  *     summary: Listar todos os pings
  *     tags: [Ping Management]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todos os pings
@@ -335,7 +356,7 @@ router.get('/hosts/:hostId/pings', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/pings', async (req, res) => {
+router.get('/pings', isAuthenticated, async (req, res) => {
   try {
     const pings = await Ping.read();
 
@@ -353,6 +374,8 @@ router.get('/pings', async (req, res) => {
  *   get:
  *     summary: Listar todas as tags
  *     tags: [Tag Management]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todas as tags
@@ -369,7 +392,7 @@ router.get('/pings', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/tags', async (req, res) => {
+router.get('/tags', isAuthenticated, async (req, res) => {
   try {
     const tags = await Tag.read();
 
@@ -385,6 +408,8 @@ router.get('/tags', async (req, res) => {
  *   get:
  *     summary: Listar todos os hosts associados a uma tag específica
  *     tags: [Tag Management]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: tag
@@ -408,7 +433,7 @@ router.get('/tags', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/tags/:tag/hosts', async (req, res) => {
+router.get('/tags/:tag/hosts', isAuthenticated, async (req, res) => {
   const { tag } = req.params;
 
   try {
@@ -482,6 +507,100 @@ router.post('/users', async (req, res) => {
     }
 
     throw new HttpError('Unable to create a user');
+  }
+});
+
+/**
+ * * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Obter informações do usuário autenticado
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Informações do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Erro ao encontrar usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/users/me', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await User.readById(userId);
+
+    delete user.password;
+
+    return res.json(user);
+  } catch (error) {
+    throw new HTTPError('Unable to find user', 400);
+  }
+});
+
+/** * @swagger
+ * /signin:
+ *   post:
+ *     summary: Autenticar usuário e obter token JWT
+ *     tags: [User Management]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *               password:
+ *                 type: string
+ *                 example: strongpassword123
+ *     responses:
+ *       200:
+ *         description: Autenticação bem-sucedida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 auth:
+ *                   type: boolean
+ *                   example: true
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ */
+router.post('/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const { id: userId, password: hash } = await User.read({ email });
+
+    const match = await bcrypt.compare(password, hash);
+
+    if (match) {
+      const token = jwt.sign(
+        { userId },
+        process.env.JWT_SECRET,
+        { expiresIn: 3600 } // 1h
+      );
+
+      return res.json({ auth: true, token });
+    } else {
+      throw new Error('User not found');
+    }
+  } catch (error) {
+    res.status(401).json({ error: 'User not found' });
   }
 });
 

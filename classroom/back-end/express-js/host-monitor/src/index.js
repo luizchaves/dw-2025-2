@@ -15,6 +15,10 @@ app.use(express.json());
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
+app.get('/', (req, res) => {
+  res.redirect('/signin.html');
+});
+
 app.use('/api', router);
 
 app.listen(3000, () => {

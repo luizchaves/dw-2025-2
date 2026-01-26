@@ -15,6 +15,14 @@ const options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Insira o token JWT no formato: Bearer <token>'
+        }
+      },
       schemas: {
         Host: {
           type: 'object',
@@ -84,6 +92,69 @@ const options = {
               type: 'number',
               example: 15.2,
             },
+          },
+        },
+        User: {
+          type: 'object',
+          required: ['name', 'email', 'password'],
+          properties: {
+            id: {
+              type: 'string',
+              description: 'ID único do usuário (CUID)',
+              example: 'clh7w1wf80000qz8d5z7z8z8z',
+            },
+            name: {
+              type: 'string',
+              example: 'John Doe',
+            },
+            email: {
+              type: 'string',
+              example: 'john.doe@example.com',
+            },
+            password: {
+              type: 'string',
+              description: 'Senha do usuário (não retornada nas respostas)',
+              example: 'strongpassword123',
+            },
+          },
+        },
+        Icmp: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            seq: { type: 'integer' },
+            ttl: { type: 'integer' },
+            time: { type: 'number', example: 12.34 },
+          },
+        },
+        Stats: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            transmitted: { type: 'integer', example: 3 },
+            received: { type: 'integer', example: 3 },
+            time: { type: 'number', example: 45.12 },
+          },
+        },
+        Ping: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            createAt: { type: 'string', format: 'date-time' },
+            host: { $ref: '#/components/schemas/Host' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                email: { type: 'string' },
+              },
+            },
+            icmps: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Icmp' },
+            },
+            stats: { $ref: '#/components/schemas/Stats' },
           },
         },
         Error: {

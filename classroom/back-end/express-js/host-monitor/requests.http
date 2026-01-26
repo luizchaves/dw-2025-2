@@ -1,50 +1,6 @@
 @server=http://127.0.0.1:3000/api
 @createdHostId={{createHost.response.body.id}}
-
-### Create a Host
-# @name createHost
-POST {{server}}/hosts
-Content-Type: application/json
-
-{
-  "name": "DNS Server",
-  "address": "1.1.1.1",
-  "tags": ["DNS"]
-}
-
-### Get All Hosts
-GET {{server}}/hosts
-
-### Get a Host by ID
-GET {{server}}/hosts/{{createdHostId}}
-
-### Update a Host by ID
-PUT {{server}}/hosts/{{createdHostId}}
-Content-Type: application/json
-
-{
-  "name": "Cloudflare DNS",
-  "address": "1.1.1.1",
-  "tags": ["DNS", "Cloudflare"]
-}
-
-### Delete a Host by ID
-DELETE {{server}}/hosts/{{createdHostId}}
-
-### Create a ping
-POST {{server}}/hosts/{{createdHostId}}/pings/3
-
-### Read pings
-GET {{server}}/hosts/{{createdHostId}}/pings
-
-### Read pings
-GET {{server}}/pings
-
-### Read tags
-GET {{server}}/tags
-
-### Read hosts by tag
-GET {{server}}/tags/dns/hosts
+@token = {{signin.response.body.$.token}}
 
 ### Create User
 # @name createdUser
@@ -75,3 +31,89 @@ Content-Type: application/json
   "name": "Luiz",
   "password": "123"
 }
+
+### Signin
+# @name signin
+POST {{server}}/signin
+Content-Type: application/json
+
+{
+  "email": "luiz@email.com",
+  "password": "123"
+}
+
+### Read current user
+GET {{server}}/users/me
+Authorization: bearer {{token}}
+
+### Signin 401
+POST {{server}}/signin
+Content-Type: application/json
+
+{
+  "email": "luiz@email.com",
+  "password": "321"
+}
+
+### Create a host without login
+POST {{server}}/hosts
+Content-Type: application/json
+
+{
+  "name": "DNS Server",
+  "address": "1.1.1.1"
+}
+
+### Create a host
+# @name createHost
+POST {{server}}/hosts
+Authorization: bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "DNS Server",
+  "address": "1.1.1.1"
+}
+
+### Get All Hosts
+GET {{server}}/hosts
+Authorization: bearer {{token}}
+
+### Get a Host by ID
+GET {{server}}/hosts/{{createdHostId}}
+Authorization: bearer {{token}}
+
+### Update a Host by ID
+PUT {{server}}/hosts/{{createdHostId}}
+Authorization: bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Cloudflare DNS",
+  "address": "1.1.1.1",
+  "tags": ["DNS", "Cloudflare"]
+}
+
+### Delete a Host by ID
+DELETE {{server}}/hosts/{{createdHostId}}
+Authorization: bearer {{token}}
+
+### Create a ping
+POST {{server}}/hosts/{{createdHostId}}/pings/3
+Authorization: bearer {{token}}
+
+### Read pings
+GET {{server}}/hosts/{{createdHostId}}/pings
+Authorization: bearer {{token}}
+
+### Read pings
+GET {{server}}/pings
+Authorization: bearer {{token}}
+
+### Read tags
+GET {{server}}/tags
+Authorization: bearer {{token}}
+
+### Read hosts by tag
+GET {{server}}/tags/dns/hosts
+Authorization: bearer {{token}}
